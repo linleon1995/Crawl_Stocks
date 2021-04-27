@@ -7,6 +7,7 @@ from io import StringIO
 import pandas as pd
 import numpy as np
 import requests
+
 import json
 
 YAHOO = ["https://query1.finance.yahoo.com/v8/finance/chart/", "&interval=1d&events=history&=hP2rOschxO0"]
