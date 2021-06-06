@@ -14,7 +14,7 @@ YAHOO = ["https://query1.finance.yahoo.com/v8/finance/chart/", "&interval=1d&eve
 
 def get_stock_price(code, period):
     """
-    Avgs:
+    Args:
         code: A String. Stock code.
         period: A Tuple inclucdes two numbers represents starting time and ending time.
     Returns:
