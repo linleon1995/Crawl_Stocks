@@ -104,17 +104,17 @@ if __name__ == "__main__":
     import finlab_crypto
     
     finlab_crypto.setup()
-    ohlcv = finlab_crypto.crawler.get_all_binance('BTCUSDT', '4h')
+    ohlcv = finlab_crypto.crawler.get_all_binance('BTCUSDT', '1m')
 
     # ohlcv.head()
 
 
     # %%
-    import matplotlib.pyplot as plt
-    new_ohlcv = ohlcv[["close"]][8288:]
-    new_ohlcv[1:15]
-    plt.figure()
-    new_ohlcv.plot()
+    # import matplotlib.pyplot as plt
+    # new_ohlcv = ohlcv[["close"]][8288:]
+    # new_ohlcv[1:15]
+    # plt.figure()
+    # new_ohlcv.plot()
 
     # import talib
     # # 透過『get_function_groups』，取得分類後的技術指標清單

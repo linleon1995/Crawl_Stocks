@@ -1,11 +1,17 @@
+#%%
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 class BaseGridTrading():
     # TODO: bad setting error, too high or too low price
     # TOOD: bad setting error, grid too small or too big
-    def __init__(self, init_property, low, high, range, stop_cond="out_range"):
+    def __init__(self, init_property, low, high, range, 
+    history,
+    trading_mode,
+    range_mode,
+                 stop_cond="out_range"):
         """
         Args:
             init_property: starting property
@@ -21,6 +27,23 @@ class BaseGridTrading():
         self.get_current_price()
         self.set_init_range()
         self.stop_cond = None
+        
+        self.history = None
+        self.range_mode = range_mode
+        self.trading_mode = trading_mode
+        if self.trading_mode == "backtest":
+            if history is not None:
+                self.history = iter(history)
+            else:
+                raise ValueError("Undefined history data.")
+
+        self.first_trade = False
+
+    def get_price_from_csv(self):
+        df = pd.read_csv('shop_list.csv')  
+
+    def get_price_from_binance(self):
+        pass
 
     def set_init_ramge(self):
         if self.price > self.high:
@@ -33,36 +56,42 @@ class BaseGridTrading():
 
     def get_current_price(self):
         self.price = None
-        
+        if self.trading_mode == "realworld":
+            pass
+        elif self.trading_mode == "backtest":
+            self.price = next(self.history)
+        else:
+            raise ValueError("Unknown trading mode.")
+            
     def trading(self, trading_type):
         self.get_current_price()
-        first_trade = True
+        self.first_trade = True
+        # if self.price <= self.cur_grid[0]:
+        #     self.trading("Buy")
+        # elif self.price >= self.cur_grid[1]:
+        #     self.trading("Sell")
+        trading_info = None
+        return trading_info
 
-    def update_grade(self):
+    def update_grid(self):
         pass
 
+    def analysis(self, trading_info):
+        self.update_grid()
+
     def __call__(self):
-        first_trade = False
         while True:
+            self.get_current_price()
             if self.price > self.low and self.price < self.high:
-                self.get_current_price()
                 if self.price <= self.cur_grid[0] or self.price >= self.cur_grid[1]:
-                    if self.price <= self.cur_grid[0]:
-                        self.trading("Buy")
-                    elif self.price >= self.cur_grid[1]:
-                        self.trading("Sell")
-                    self.update_grid()
-                else:
-                    pass
+                    trading_info = self.trading()
+                    self.analysis(trading_info)
             else:
                 # After filling first trading, execute stoping-condition
-                if first_trade:
+                if self.first_trade:
                     if self.stop_cond == "out_range":
                         break
                     # elif self.stop_cond == ""
-
-
-
 
         # if price < self.low or price > self.high:
         #     self.stop_trading()
@@ -78,17 +107,20 @@ class BaseGridTrading():
     def set_grid(self):
         self.grid = tuple(range(self.low, self.high, self.range))
 
-    def start_trading(self):
-        pass
 
-    def stop_trading(self):
-        pass
 
+
+#%%
 if __name__ == "__main__":
-    trading_bot = BaseGridTrading(init_property=1000,
-                               low=25000,
-                               high=45000,
-                               grid_mode="ratio")
-    trading_bot()
+    df = pd.read_csv('history/BTCUSDT-4h-data.csv') 
+    df.head()
+    print(df["close"][[0]])
+    # trading_bot = BaseGridTrading(init_property=1000,
+    #                            low=25000,
+    #                            high=45000,
+    #                            grid_mode="ratio")
+    # trading_bot()
 
-    
+
+
+# %%

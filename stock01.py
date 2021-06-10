@@ -42,3 +42,5 @@ if __name__ == '__main__':
     df = get_stock_price("2882.TW", (0, 1517722857))
     df.head()
     df.close.plot()
+
+# %%
