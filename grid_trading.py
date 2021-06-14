@@ -5,46 +5,50 @@ import numpy as np
 import pandas as pd
 
 class BaseGridTrading():
-    # TODO: bad setting error, too high or too low price
-    # TOOD: bad setting error, grid too small or too big
-    def __init__(self, init_property, low, high, range, 
-    history,
-    trading_mode,
+    # TODO: check bad setting error, too high or too low price
+    # TODO: check bad setting error, grid too small or too big
+    # TODO: Get assest information from Binance
+    def __init__(self, assest, low, high, range,
+    backtest_data,
     range_mode,
-                 stop_cond="out_range"):
+                 stop_cond="out_range",
+                 min_assest=None):
         """
         Args:
-            init_property: starting property
+            assest: starting property
             low: Lowest price of grid
             high: Highest price of grid
             range: Price range of grid
 
         """
-        self.init_property = init_property
+        self.trading_ratio = 0.05 # Total assest need to be 1/trading_ratio times of trading amount
         self.low = low
         self.high = high
         self.range = range
-        self.get_current_price()
+        
+        history = pd.read_csv(backtest_data)
+        self.history = history.iterrows()
+
+        # TODO: general case for select trading coin in self.pair
+        self.pair = [coin for coin in assest]
+        self.get_current_price(self.pair[0])
         self.set_init_range()
         self.stop_cond = None
         
-        self.history = None
         self.range_mode = range_mode
-        self.trading_mode = trading_mode
-        if self.trading_mode == "backtest":
-            if history is not None:
-                self.history = iter(history)
-            else:
-                raise ValueError("Undefined history data.")
+        # self.trading_mode = trading_mode
+        # if self.trading_mode == "backtest":
+        #     if history is not None:
+        #         self.history = iter(history)
+        #     else:
+        #         raise ValueError("Undefined history data.")
 
         self.first_trade = False
-
-    def get_price_from_csv(self):
-        df = pd.read_csv('shop_list.csv')  
-
-    def get_price_from_binance(self):
-        pass
-
+        self.assest = assest # {"BTC": btc_assest, "USDT": usdt_assest}
+        if min_assest is not None:
+            self.min_assest = min_assest
+        else:
+            self.min_assest = None # TODO: min = current BTC price (USDT) * BTC amount + USDT amount
     def set_init_ramge(self):
         if self.price > self.high:
             self.cur_grid = (self.grid[-2], self.grid[-1])
@@ -54,23 +58,36 @@ class BaseGridTrading():
             self.cur_grid = (self.grid[self.price//self.range],
                              self.grid[self.price//self.range+1])
 
-    def get_current_price(self):
-        self.price = None
-        if self.trading_mode == "realworld":
-            pass
-        elif self.trading_mode == "backtest":
-            self.price = next(self.history)
-        else:
-            raise ValueError("Unknown trading mode.")
-            
-    def trading(self, trading_type):
+    def get_current_price(self, coin):
+        idx, row = next(self.history)
+        self.price = (idx, row["timestamp"], row["close"])
+        # self.price = None
+        # if self.trading_mode == "realworld":
+        #     pass
+        # elif self.trading_mode == "backtest":
+        #     self.price = next(self.history)
+        # else:
+        #     raise ValueError("Unknown trading mode.")
+    
+    def buy(self):
+        trading_info = None
+        self.price
+        self.assest
+
+        return trading_info
+    
+    def sell(self):
+        trading_info = None
+        return trading_info
+
+    def trading(self):
+        # TODO: check the time difference between condition match and actual trading
         self.get_current_price()
         self.first_trade = True
-        # if self.price <= self.cur_grid[0]:
-        #     self.trading("Buy")
-        # elif self.price >= self.cur_grid[1]:
-        #     self.trading("Sell")
-        trading_info = None
+        if self.price <= self.cur_grid[0]:
+            trading_info = self.buy()
+        elif self.price >= self.cur_grid[1]:
+            trading_info = self.sell()
         return trading_info
 
     def update_grid(self):
@@ -82,9 +99,12 @@ class BaseGridTrading():
     def __call__(self):
         while True:
             self.get_current_price()
-            if self.price > self.low and self.price < self.high:
-                if self.price <= self.cur_grid[0] or self.price >= self.cur_grid[1]:
+            cur_price = self.price[2]
+            if cur_price > self.low and cur_price < self.high:
+                if cur_price <= self.cur_grid[0] or cur_price >= self.cur_grid[1]:
                     trading_info = self.trading()
+                    # TODO: How to make sure trading actually sucess?
+                    self.update_assest(trading_info)
                     self.analysis(trading_info)
             else:
                 # After filling first trading, execute stoping-condition
@@ -113,10 +133,17 @@ class BaseGridTrading():
 #%%
 if __name__ == "__main__":
     df = pd.read_csv('history/BTCUSDT-4h-data.csv') 
-    df.head()
-    print(df["close"][[0]])
-    # trading_bot = BaseGridTrading(init_property=1000,
-    #                            low=25000,
+    iter_ob = df.iterrows()
+    idx, row = next(iter_ob)
+    print(row)
+    print(row["close"])
+    idx, row = next(iter_ob)
+    print(row["close"])
+    # while True:
+    #     idx, row = next(iter_ob)
+    #     print(idx, row["close"])
+
+    # trading_bot = BaseGridTrading(low=25000,
     #                            high=45000,
     #                            grid_mode="ratio")
     # trading_bot()
