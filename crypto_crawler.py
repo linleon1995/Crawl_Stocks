@@ -73,8 +73,10 @@ def get_all_binance_modified(symbol, kline_size, save=True, client=Client()):
     else:
         data_df = pd.DataFrame()
     oldest_point, newest_point = minutes_of_new_data(symbol, kline_size, data_df, source="binance", client=client)
+    oldest_point = datetime.strptime('23 Sep 2021', '%d %b %Y')
     delta_min = (newest_point - oldest_point).total_seconds() / 60
     available_data = math.ceil(delta_min / binsizes[kline_size])
+    print(oldest_point)
     if oldest_point == datetime.strptime('1 Jan 2017', '%d %b %Y'):
         print('Downloading all available %s data for %s. Be patient..!' % (kline_size, symbol))
     else:
@@ -104,7 +106,7 @@ if __name__ == "__main__":
     import finlab_crypto
     
     finlab_crypto.setup()
-    ohlcv = finlab_crypto.crawler.get_all_binance('BTCUSDT', '1m')
+    ohlcv = get_all_binance_modified('ETHUSDT', '1m')
 
     # ohlcv.head()
 
